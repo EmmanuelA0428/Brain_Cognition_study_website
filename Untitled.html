@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Pathway Memorization Tool</title>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #166088;
+            --accent: #4fc3f7;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #333333;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1, h2, h3 {
+            color: var(--secondary);
+        }
+        
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f1f1f1;
+            border: none;
+            transition: 0.3s;
+        }
+        
+        .tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeEffect 0.5s;
+        }
+        
+        @keyframes fadeEffect {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+        
+        .flashcard {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin: 15px 0;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+            position: relative;
+        }
+        
+        .flashcard:hover {
+            transform: translateY(-5px);
+        }
+        
+        .flashcard .front, .flashcard .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backface-visibility: hidden;
+            transition: transform 0.6s;
+        }
+        
+        .flashcard .front {
+            transform: rotateY(0deg);
+        }
+        
+        .flashcard .back {
+            transform: rotateY(180deg);
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .flashcard.flipped .front {
+            transform: rotateY(180deg);
+        }
+        
+        .flashcard.flipped .back {
+            transform: rotateY(0deg);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--secondary);
+        }
+        
+        .quiz-option {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: var(--card-bg);
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .quiz-option:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .quiz-option.correct {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        
+        .quiz-option.incorrect {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background-color: var(--accent);
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .visual-pathway {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .pathway-diagram {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .eye {
+            text-align: center;
+            width: 30%;
+        }
+        
+        .brain {
+            text-align: center;
+            width: 30%;
+        }
+        
+        .arrow {
+            width: 10%;
+            text-align: center;
+            font-size: 24px;
+            color: var(--primary);
+        }
+        
+        .retina-split {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .retina-half {
+            width: 48%;
+            padding: 5px;
+            text-align: center;
+            border-radius: 4px;
+        }
+        
+        .nasal {
+            background-color: #ffebee;
+            border: 1px solid #ef9a9a;
+        }
+        
+        .temporal {
+            background-color: #e8f5e9;
+            border: 1px solid #a5d6a7;
+        }
+        
+        .custom-terms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .custom-term {
+            background-color: var(--accent);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .custom-term button {
+            background: none;
+            border: none;
+            color: white;
+            margin-left: 5px;
+            padding: 0;
+            font-size: 12px;
+        }
+        
+        @media (max-width: 600px) {
+            .pathway-diagram {
+                flex-direction: column;
+            }
+            .eye, .brain, .arrow {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Visual Pathway Memorization Tool</h1>
+    
+    <div class="tab-container">
+        <button class="tab active" onclick="openTab('flashcards')">Flashcards</button>
+        <button class="tab" onclick="openTab('quiz')">Quiz</button>
+        <button class="tab" onclick="openTab('diagram')">Diagram</button>
+        <button class="tab" onclick="openTab('custom')">Add Terms</button>
+    </div>
+    
+    <!-- Flashcards Tab -->
+    <div id="flashcards" class="tab-content" style="display: block;">
+        <h2>Visual Pathway Flashcards</h2>
+        <div class="controls">
+            <button id="prev-card">Previous</button>
+            <span id="card-count">1/10</span>
+            <button id="next-card">Next</button>
+        </div>
+        <div id="flashcard-container" class="flashcard">
+            <div class="front">
+                <p>Click to flip</p>
+            </div>
+            <div class="back">
+                <p>Answer appears here</p>
+            </div>
+        </div>
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+    </div>
+    
+    <!-- Quiz Tab -->
+    <div id="quiz" class="tab-content">
+        <h2>Visual Pathway Quiz</h2>
+        <div id="quiz-question">
+            <p>Loading question...</p>
+        </div>
+        <div id="quiz-options">
+            <!-- Options will be added here by JavaScript -->
+        </div>
+        <div class="controls">
+            <button id="next-question" style="display: none;">Next Question</button>
+        </div>
+        <div class="progress-container">
+            <div id="quiz-progress" class="progress-bar"></div>
+        </div>
+    </div>
+    
+    <!-- Diagram Tab -->
+    <div id="diagram" class="tab-content">
+        <h2>Visual Pathway Diagram</h2>
+        <div class="visual-pathway">
+            <div class="pathway-diagram">
+                <div class="eye">
+                    <h3>Left Eye</h3>
+                    <div class="retina-split">
+                        <div class="retina-half temporal">
+                            Left Visual Field<br>(Temporal Retina)
+                        </div>
+                        <div class="retina-half nasal">
+                            Right Visual Field<br>(Nasal Retina)
+                        </div>
+                    </div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="brain">
+                    <h3>Brain</h3>
+                    <p>Nasal fibers cross at optic chiasm</p>
+                    <p>Temporal fibers stay ipsilateral</p>
+                </div>
+                <div class="arrow">→</div>
+                <div class="eye">
+                    <h3>Right Eye</h3>
+                    <div class="retina-split">
+                        <div class="retina-half nasal">
+                            Left Visual Field<br>(Nasal Retina)
+                        </div>
+                        <div class="retina-half temporal">
+                            Right Visual Field<br>(Temporal Retina)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <p><strong>Left Visual Field → Right Hemisphere</strong></p>
+                <p><strong>Right Visual Field → Left Hemisphere</strong></p>
+            </div>
+        </div>
+        <h3>Key Points:</h3>
+        <ul>
+            <li>Each eye sees both visual fields (left and right)</li>
+            <li>The lens flips the image, so the left side of what you see (left visual field) hits the right side of each retina</li>
+            <li>Nasal retina fibers cross at the optic chiasm</li>
+            <li>Temporal retina fibers stay on the same side</li>
+            <li>All information from the right visual field ends up in the left visual cortex</li>
+        </ul>
+    </div>
+    
+    <!-- Custom Terms Tab -->
+    <div id="custom" class="tab-content">
+        <h2>Add Custom Terms</h2>
+        <div class="form-group">
+            <label for="term">Term:</label>
+            <input type="text" id="term" placeholder="E.g., Nasal Retina">
+        </div>
+        <div class="form-group">
+            <label for="definition">Definition:</label>
+            <textarea id="definition" rows="3" placeholder="E.g., The inner half of the retina that crosses at the optic chiasm"></textarea>
+        </div>
+        <button id="add-term">Add Term</button>
+        
+        <h3>Your Custom Terms:</h3>
+        <div id="custom-terms-list" class="custom-terms">
+            <!-- Custom terms will appear here -->
+        </div>
+    </div>
+    
+    <script>
+        // Flashcards data
+        const flashcards = [
+            { front: "What does the left visual field correspond to in the retina?", back: "The right half of each retina" },
+            { front: "What does the right visual field correspond to in the retina?", back: "The left half of each retina" },
+            { front: "Which part of the retina crosses at the optic chiasm?", back: "Nasal retina (inner half)" },
+            { front: "Which part of the retina stays on the same side?", back: "Temporal retina (outer half)" },
+            { front: "Where does information from the right visual field ultimately process?", back: "Left visual cortex" },
+            { front: "Where does information from the left visual field ultimately process?", back: "Right visual cortex" },
+            { front: "What would damage to the left occipital lobe affect?", back: "Right visual field perception" },
+            { front: "Why does each hemisphere receive input from both eyes?", back: "Because nasal fibers cross while temporal fibers stay ipsilateral" },
+            { front: "What is the effect of cutting the optic chiasm?", back: "Loss of peripheral vision (tunnel vision)" },
+            { front: "How does visual information reach the thalamus?", back: "Via the optic nerves after the chiasm (optic tracts)" }
+        ];
+        
+        // Quiz questions
+        const quizQuestions = [
+            {
+                question: "Information from the right visual field is processed by which hemisphere?",
+                options: ["Left hemisphere", "Right hemisphere", "Both hemispheres", "Neither hemisphere"],
+                answer: 0
+            },
+            {
+                question: "Which part of the retina crosses at the optic chiasm?",
+                options: ["Temporal retina", "Nasal retina", "Both parts", "Neither part"],
+                answer: 1
+            },
+            {
+                question: "Damage to the right occipital lobe would affect which visual field?",
+                options: ["Right visual field", "Left visual field", "Both visual fields", "No effect"],
+                answer: 1
+            },
+            {
+                question: "The left half of the right eye's retina detects which visual field?",
+                options: ["Left visual field", "Right visual field", "Both fields", "Neither field"],
+                answer: 1
+            },
+            {
+                question: "Which statement about the visual pathway is correct?",
+                options: [
+                    "All fibers cross at the optic chiasm",
+                    "All fibers stay on the same side",
+                    "Nasal fibers cross while temporal fibers stay ipsilateral",
+                    "Temporal fibers cross while nasal fibers stay ipsilateral"
+                ],
+                answer: 2
+            }
+        ];
+        
+        // Current card and quiz question indices
+        let currentCardIndex = 0;
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let customTerms = JSON.parse(localStorage.getItem('customTerms')) || [];
+        
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize flashcards
+            updateFlashcard();
+            
+            // Initialize quiz
+            showQuestion();
+            
+            // Initialize custom terms
+            renderCustomTerms();
+            
+            // Event listeners
+            document.getElementById('flashcard-container').addEventListener('click', flipCard);
+            document.getElementById('prev-card').addEventListener('click', prevCard);
+            document.getElementById('next-card').addEventListener('click', nextCard);
+            document.getElementById('next-question').addEventListener('click', nextQuestion);
+            document.getElementById('add-term').addEventListener('click', addCustomTerm);
+        });
+        
+        // Tab functionality
+        function openTab(tabName) {
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let i = 0; i < tabContents.length; i++) {
+                tabContents[i].style.display = 'none';
+            }
+            
+            const tabs = document.getElementsByClassName('tab');
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].className = tabs[i].className.replace(' active', '');
+            }
+            
+            document.getElementById(tabName).style.display = 'block';
+            event.currentTarget.className += ' active';
+        }
+        
+        // Flashcard functions
+        function updateFlashcard() {
+            const card = flashcards[currentCardIndex];
+            const front = document.querySelector('.front p');
+            const back = document.querySelector('.back p');
+            
+            front.textContent = card.front;
+            back.textContent = card.back;
+            
+            document.getElementById('card-count').textContent = `${currentCardIndex + 1}/${flashcards.length}`;
+            document.getElementById('progress-bar').style.width = `${(currentCardIndex / (flashcards.length - 1)) * 100}%`;
+            
+            // Reset flip state
+            document.getElementById('flashcard-container').classList.remove('flipped');
+        }
+        
+        function flipCard() {
+            this.classList.toggle('flipped');
+        }
+        
+        function prevCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                updateFlashcard();
+            }
+        }
+        
+        function nextCard() {
+            if (currentCardIndex < flashcards.length - 1) {
+                currentCardIndex++;
+                updateFlashcard();
+            }
+        }
+        
+        // Quiz functions
+        function showQuestion() {
+            const question = quizQuestions[currentQuestionIndex];
+            const questionElement = document.getElementById('quiz-question');
+            const optionsElement = document.getElementById('quiz-options');
+            
+            questionElement.innerHTML = `<p>${question.question}</p>`;
+            optionsElement.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'quiz-option';
+                button.textContent = option;
+                button.addEventListener('click', () => checkAnswer(index));
+                optionsElement.appendChild(button);
+            });
+            
+            document.getElementById('next-question').style.display = 'none';
+            document.getElementById('quiz-progress').style.width = `${(currentQuestionIndex / (quizQuestions.length - 1)) * 100}%`;
+        }
+        
+        function checkAnswer(selectedIndex) {
+            const question = quizQuestions[currentQuestionIndex];
+            const options = document.querySelectorAll('.quiz-option');
+            
+            options.forEach((option, index) => {
+                if (index === question.answer) {
+                    option.classList.add('correct');
+                } else if (index === selectedIndex && index !== question.answer) {
+                    option.classList.add('incorrect');
+                }
+                option.disabled = true;
+            });
+            
+            if (selectedIndex === question.answer) {
+                score++;
+            }
+            
+            document.getElementById('next-question').style.display = 'block';
+        }
+        
+        function nextQuestion() {
+            if (currentQuestionIndex < quizQuestions.length - 1) {
+                currentQuestionIndex++;
+                showQuestion();
+            } else {
+                // Quiz completed
+                const quizContainer = document.getElementById('quiz');
+                quizContainer.innerHTML = `
+                    <h2>Quiz Completed!</h2>
+                    <p>Your score: ${score}/${quizQuestions.length}</p>
+                    <button onclick="resetQuiz()">Take Quiz Again</button>
+                `;
+            }
+        }
+        
+        function resetQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            showQuestion();
+        }
+        
+        // Custom terms functions
+        function addCustomTerm() {
+            const term = document.getElementById('term').value.trim();
+            const definition = document.getElementById('definition').value.trim();
+            
+            if (term && definition) {
+                customTerms.push({ term, definition });
+                localStorage.setItem('customTerms', JSON.stringify(customTerms));
+                
+                // Add to flashcards
+                flashcards.push({ front: term, back: definition });
+                
+                // Clear inputs
+                document.getElementById('term').value = '';
+                document.getElementById('definition').value = '';
+                
+                // Update display
+                renderCustomTerms();
+                updateFlashcard();
+            }
+        }
+        
+        function renderCustomTerms() {
+            const container = document.getElementById('custom-terms-list');
+            container.innerHTML = '';
+            
+            customTerms.forEach((item, index) => {
+                const termElement = document.createElement('div');
+                termElement.className = 'custom-term';
+                termElement.innerHTML = `
+                    ${item.term}
+                    <button onclick="deleteTerm(${index})">×</button>
+                `;
+                container.appendChild(termElement);
+            });
+        }
+        
+        function deleteTerm(index) {
+            customTerms.splice(index, 1);
+            localStorage.setItem('customTerms', JSON.stringify(customTerms));
+            renderCustomTerms();
+            
+            // Remove from flashcards (find by term)
+            const termToDelete = customTerms[index]?.term;
+            if (termToDelete) {
+                const cardIndex = flashcards.findIndex(card => card.front === termToDelete);
+                if (cardIndex !== -1) {
+                    flashcards.splice(cardIndex, 1);
+                    if (currentCardIndex >= cardIndex && currentCardIndex > 0) {
+                        currentCardIndex--;
+                    }
+                    updateFlashcard();
+                }
+            }
+        }
+    </script>
+</body>
+</html>
