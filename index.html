@@ -400,7 +400,7 @@
     
     <script>
         // Flashcards data
-        const flashcards = [
+        let flashcards = [
             { front: "What does the left visual field correspond to in the retina?", back: "The right half of each retina" },
             { front: "What does the right visual field correspond to in the retina?", back: "The left half of each retina" },
             { front: "Which part of the retina crosses at the optic chiasm?", back: "Nasal retina (inner half)" },
@@ -453,15 +453,17 @@
         let score = 0;
         let customTerms = JSON.parse(localStorage.getItem('customTerms')) || [];
         
+        // Sync custom terms to flashcards on load
+        customTerms.forEach(item => {
+            if (!flashcards.some(card => card.front === item.term)) {
+                flashcards.push({ front: item.term, back: item.definition });
+            }
+        });
+        
         // Initialize the app
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize flashcards
             updateFlashcard();
-            
-            // Initialize quiz
             showQuestion();
-            
-            // Initialize custom terms
             renderCustomTerms();
             
             // Event listeners
@@ -590,18 +592,20 @@
             const definition = document.getElementById('definition').value.trim();
             
             if (term && definition) {
+                // Add to both storage systems
                 customTerms.push({ term, definition });
                 localStorage.setItem('customTerms', JSON.stringify(customTerms));
                 
-                // Add to flashcards
+                // Add to flashcards array
                 flashcards.push({ front: term, back: definition });
                 
-                // Clear inputs
+                // Clear inputs and refresh
                 document.getElementById('term').value = '';
                 document.getElementById('definition').value = '';
-                
-                // Update display
                 renderCustomTerms();
+                
+                // Show the new card
+                currentCardIndex = flashcards.length - 1;
                 updateFlashcard();
             }
         }
@@ -622,22 +626,22 @@
         }
         
         function deleteTerm(index) {
+            const termToDelete = customTerms[index].term;
+            
+            // Remove from both arrays
             customTerms.splice(index, 1);
             localStorage.setItem('customTerms', JSON.stringify(customTerms));
-            renderCustomTerms();
             
-            // Remove from flashcards (find by term)
-            const termToDelete = customTerms[index]?.term;
-            if (termToDelete) {
-                const cardIndex = flashcards.findIndex(card => card.front === termToDelete);
-                if (cardIndex !== -1) {
-                    flashcards.splice(cardIndex, 1);
-                    if (currentCardIndex >= cardIndex && currentCardIndex > 0) {
-                        currentCardIndex--;
-                    }
-                    updateFlashcard();
+            const cardIndex = flashcards.findIndex(card => card.front === termToDelete);
+            if (cardIndex !== -1) {
+                flashcards.splice(cardIndex, 1);
+                if (currentCardIndex >= cardIndex && currentCardIndex > 0) {
+                    currentCardIndex--;
                 }
             }
+            
+            renderCustomTerms();
+            updateFlashcard();
         }
     </script>
 </body>
